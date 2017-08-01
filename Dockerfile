@@ -80,6 +80,7 @@ RUN pecl install msgpack && \
 RUN apk add --virtual .yar-deps curl-dev && \
     pecl install yar && \
     echo extension=yar.so > /etc/php7/conf.d/yar.ini && \
+    echo yar.packager=msgpack >> /etc/php7/conf.d/yar.ini && \
     pecl clear-cache && \
     apk del .yar-deps
 
