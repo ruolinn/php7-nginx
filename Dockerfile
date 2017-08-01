@@ -18,11 +18,7 @@ RUN apk --update add \
     build-base \
     make \
     git \
-    libressl \
-    libressl-dev \
     zlib-dev \
-    libcouchbase-dev \
-    librdkafka-dev \
     zsh \
     nginx \
     openssh \
@@ -38,6 +34,7 @@ RUN apk --update add \
     php7-mbstring \
 		php7-openssl \
 		php7-json \
+    php7-dom \
 		php7-pdo \
 		php7-zip \
 		php7-mysqli \
@@ -57,16 +54,34 @@ RUN apk --update add \
     --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
     --repository http://dl-cdn.alpinelinux.org/alpine/edge/community
 
-RUN pecl install mongodb && \
-    pecl install msgpack && \
-    pecl install yar     && \
-    pecl install couchbase-2.2.0 && \
-    pecl install rdkafka && \
+RUN apk add --virtual .mongodb-deps openssl-dev && \
+    pecl install mongodb && \
     echo extension=mongodb.so > /etc/php7/conf.d/mongodb.ini && \
-    echo extension=msgpack.so > /etc/php7/conf.d/msgpack.ini && \
-    echo extension=yar.so > /etc/php7/conf.d/yar.ini && \         
+    pecl clear-cache && \
+    apk del .mongodb-deps
+
+
+RUN apk add libcouchbase-dev && \
+    pecl install couchbase-2.2.0 && \
     echo extension=couchbase.so > /etc/php7/conf.d/couchbase.ini && \
-    echo extension=rdkafka.so > /etc/php7/conf.d/rdkafka.ini
+    pecl clear-cache
+
+RUN apk add libssl1.0
+
+RUN apk add librdkafka-dev && \
+    pecl install rdkafka && \
+    echo extension=rdkafka.so > /etc/php7/conf.d/rdkafka.ini && \
+    pecl clear-cache
+
+RUN pecl install msgpack && \
+    echo extension=msgpack.so > /etc/php7/conf.d/msgpack.ini && \
+    pecl clear-cache
+
+RUN apk add --virtual .yar-deps curl-dev && \
+    pecl install yar && \
+    echo extension=yar.so > /etc/php7/conf.d/yar.ini && \
+    pecl clear-cache && \
+    apk del .yar-deps
 
 #RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 COPY config/composer.phar /usr/local/bin/composer
