@@ -18,7 +18,7 @@ RUN apk --update add \
     build-base \
     make \
     git \
-    openssl \
+    libressl \
     libressl-dev \
     zlib-dev \
     libcouchbase-dev \
@@ -27,7 +27,8 @@ RUN apk --update add \
     nginx \
     openssh \
     supervisor \
-    curl 
+    curl \
+    curl-dev
 
 RUN apk --update add \
     php7 \
@@ -40,6 +41,7 @@ RUN apk --update add \
 		php7-pdo \
 		php7-zip \
 		php7-mysqli \
+    php7-redis \
 		php7-bcmath \
 		php7-gd \
 		php7-pdo_mysql \
@@ -58,15 +60,13 @@ RUN apk --update add \
 RUN pecl install mongodb && \
     pecl install msgpack && \
     pecl install yar     && \
-    pecl install redis   && \
-    pecl install couchbase-2.0.0 \
-    pecl install rdkafka \
+    pecl install couchbase-2.2.0 && \
+    pecl install rdkafka && \
     echo extension=mongodb.so > /etc/php7/conf.d/mongodb.ini && \
     echo extension=msgpack.so > /etc/php7/conf.d/msgpack.ini && \
     echo extension=yar.so > /etc/php7/conf.d/yar.ini && \         
-    echo extension=redis.so > /etc/php7/conf.d/redis.ini && \
     echo extension=couchbase.so > /etc/php7/conf.d/couchbase.ini && \
-    echo extension=couchbase.so > /etc/php7/conf.d/rdkafka.ini
+    echo extension=rdkafka.so > /etc/php7/conf.d/rdkafka.ini
 
 #RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 COPY config/composer.phar /usr/local/bin/composer
