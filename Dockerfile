@@ -134,6 +134,8 @@ RUN cd $UHOME \
 
 USER $UNAME
 
+RUN sudo mkdir /var/log/supervisord
+
 EXPOSE 80 443
 
 CMD ["sudo", "/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
