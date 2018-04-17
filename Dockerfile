@@ -1,17 +1,22 @@
-FROM alpine:edge
+FROM alpine:3.7
+
+ENV VERSION 0.0.1
 
 MAINTAINER Ruolinn "guangxiao.wang@gmail.com"
 
 ENV TIMEZONE Asia/Shanghai
 
-# RUN echo https://mirror.tuna.tsinghua.edu.cn/alpine/edge/main | tee /etc/apk/repositories \
+#RUN echo https://mirror.tuna.tsinghua.edu.cn/alpine/edge/main | tee -a /etc/apk/repositories \
 #    && echo @testing https://mirror.tuna.tsinghua.edu.cn/alpine/edge/testing | tee -a /etc/apk/repositories \
-#    && echo @community https://mirror.tuna.tsinghua.edu.cn/alpine/edge/community | tee -a /etc/apk/repositories \
+#    && echo @community https://mirror.tuna.tsinghua.edu.cn/alpine/edge/community | tee -a /etc/apk/repositories
+
+RUN echo https://mirror.tuna.tsinghua.edu.cn/alpine/v3.7/main | tee -a /etc/apk/repositories \
+    && echo @community https://mirror.tuna.tsinghua.edu.cn/alpine/v3.7/community | tee -a /etc/apk/repositories
+
 
 RUN apk update
 
 RUN apk add --update tzdata
-
 RUN cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && echo "${TIMEZONE}" > /etc/timezone
 
 RUN apk --update add \
@@ -30,6 +35,8 @@ RUN apk --update add \
     php7 \
     php7-dev \
     php7-intl \
+    php7-posix \
+    php7-pcntl \
     php7-mcrypt \
     php7-mbstring \
 		php7-openssl \
@@ -51,27 +58,28 @@ RUN apk --update add \
 		php7-fpm \
     php7-pear \
     php7-phar \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/community
-
-RUN apk add --virtual .mongodb-deps openssl-dev && \
-    pecl install mongodb && \
-    echo extension=mongodb.so > /etc/php7/conf.d/mongodb.ini && \
-    pecl clear-cache && \
-    apk del .mongodb-deps
+    php7-fileinfo \
+    php7-xmlwriter \
+    php7-simplexml \
+    php7-zlib 
 
 
-RUN apk add libcouchbase-dev && \
-    pecl install couchbase-2.2.0 && \
-    echo extension=couchbase.so > /etc/php7/conf.d/couchbase.ini && \
-    pecl clear-cache
+# Build & install ext/tideways & Tideways.php (props to till)
+RUN cd /tmp && \
+    curl -L "https://github.com/tideways/php-xhprof-extension/archive/master.zip" \
+   	--output "/tmp/master.zip" && \
+	  cd /tmp && unzip "master.zip" && \
+	  cd "php-xhprof-extension-master" && \
+    phpize && \
+	  ./configure && \
+	  make && make install 
 
-RUN apk add libssl1.0
+#RUN apk add libssl1.0
 
-RUN apk add librdkafka-dev && \
-    pecl install rdkafka && \
-    echo extension=rdkafka.so > /etc/php7/conf.d/rdkafka.ini && \
-    pecl clear-cache
+#RUN apk add librdkafka-dev && \
+#    pecl install rdkafka && \
+#    echo extension=rdkafka.so > /etc/php7/conf.d/rdkafka.ini && \
+#    pecl clear-cache
 
 RUN pecl install msgpack && \
     echo extension=msgpack.so > /etc/php7/conf.d/msgpack.ini && \
